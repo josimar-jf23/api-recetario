@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String   @db.VarChar(50)
+  password  String
+  token     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Recipe    Recipe[]
+
+  @@map("users")
+}
+
+model UnitMeasure {
+  id    String @id @default(cuid())
+  name  String @unique @db.VarChar(100)
+  short String @db.VarChar(20)
+  code  String @unique
+
+  @@map("units_measure")
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String  @unique @db.VarChar(200)
+  description String?
+
+  @@map("categories")
+}
+
+model Recipe {
+  id                 String             @id @default(cuid())
+  name               String             @db.VarChar(250)
+  description        String?
+  preparation_time   Decimal            @db.Decimal(9, 2)
+  user               User               @relation(fields: [UserId], references: [id])
+  UserId             String
+  recipe_steps       RecipeStep[]
+  recipe_ingredients RecipeIngredient[]
+
+  @@map("recipes")
+}
+
+model RecipeStep {
+  id       String @id @default(cuid())
+  step     String
+  order    Int    @default(0)
+  recipe   Recipe @relation(fields: [RecipeId], references: [id])
+  RecipeId String
+
+  @@map("recipe_steps")
+}
+
+model RecipeIngredient {
+  id         String  @id @default(cuid())
+  ingredient String
+  amount     Decimal @db.Decimal(9, 2)
+  order      Int     @default(0)
+  recipe     Recipe  @relation(fields: [RecipeId], references: [id])
+  RecipeId   String
+
+  @@map("recipe_ingredients")
+}
+
